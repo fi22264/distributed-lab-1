@@ -3,8 +3,8 @@ package main
 import (
 	"bufio"
 	"flag"
-	"net"
 	"fmt"
+	"net"
 )
 
 type Message struct {
@@ -13,17 +13,36 @@ type Message struct {
 }
 
 func handleError(err error) {
+	if err != nil {
+		panic(err)
+	}
 	// TODO: all
 	// Deal with an error event.
 }
 
 func acceptConns(ln net.Listener, conns chan net.Conn) {
+	for {
+		conn, e := ln.Accept()
+		handleError(e)
+		conns <- conn
+	}
 	// TODO: all
+
 	// Continuously accept a network connection from the Listener
 	// and add it to the channel for handling connections.
 }
 
 func handleClient(client net.Conn, clientid int, msgs chan Message) {
+	reader := bufio.NewScanner(client)
+	for reader.Scan() {
+		msg_ := reader.Text()
+		msg := Message{
+			sender:  clientid,
+			message: fmt.Sprintf("[%d]: %s\n", clientid, msg_),
+		}
+
+		msgs <- msg
+	}
 	// TODO: all
 	// So long as this connection is alive:
 	// Read in new messages as delimited by '\n's
@@ -39,6 +58,11 @@ func main() {
 
 	//TODO Create a Listener for TCP connections on the port given above.
 
+	ln, e := net.Listen("tcp", *portPtr)
+	if e != nil {
+		panic(e)
+	}
+
 	//Create a channel for connections
 	conns := make(chan net.Conn)
 	//Create a channel for messages
@@ -51,11 +75,22 @@ func main() {
 	for {
 		select {
 		case conn := <-conns:
-			//TODO Deal with a new connection
-			// - assign a client ID
-			// - add the client to the clients channel
-			// - start to asynchronously handle messages from this client
+			cID := len(clients) + 1
+			fmt.Printf("New connection with ID: %d and addr: %s\n", cID, conn.RemoteAddr().String())
+			clients[cID] = conn
+			go handleClient(conn, cID, msgs)
+
 		case msg := <-msgs:
+			for i, client := range clients {
+				if i == msg.sender {
+					continue
+				}
+				writer := bufio.NewWriter(client)
+				_, e := writer.WriteString(msg.message)
+				handleError(e)
+				e = writer.Flush()
+				handleError(e)
+			}
 			//TODO Deal with a new message
 			// Send the message to all clients that aren't the sender
 		}
