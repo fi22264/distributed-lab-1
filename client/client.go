@@ -51,8 +51,4 @@ func main() {
 	}
 
 	handleConnection(conn)
-
-	//TODO Try to connect to the server
-	//TODO Start asynchronously reading and displaying messages
-	//TODO Start getting and sending user messages.
 }

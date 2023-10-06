@@ -16,8 +16,6 @@ func handleError(err error) {
 	if err != nil {
 		panic(err)
 	}
-	// TODO: all
-	// Deal with an error event.
 }
 
 func acceptConns(ln net.Listener, conns chan net.Conn) {
@@ -26,10 +24,6 @@ func acceptConns(ln net.Listener, conns chan net.Conn) {
 		handleError(e)
 		conns <- conn
 	}
-	// TODO: all
-
-	// Continuously accept a network connection from the Listener
-	// and add it to the channel for handling connections.
 }
 
 func handleClient(client net.Conn, clientid int, msgs chan Message) {
@@ -43,11 +37,6 @@ func handleClient(client net.Conn, clientid int, msgs chan Message) {
 
 		msgs <- msg
 	}
-	// TODO: all
-	// So long as this connection is alive:
-	// Read in new messages as delimited by '\n's
-	// Tidy up each message and add it to the messages channel,
-	// recording which client it came from.
 }
 
 func main() {
@@ -55,8 +44,6 @@ func main() {
 	// Default to port 8030
 	portPtr := flag.String("port", ":8030", "port to listen on")
 	flag.Parse()
-
-	//TODO Create a Listener for TCP connections on the port given above.
 
 	ln, e := net.Listen("tcp", *portPtr)
 	if e != nil {
@@ -91,8 +78,6 @@ func main() {
 				e = writer.Flush()
 				handleError(e)
 			}
-			//TODO Deal with a new message
-			// Send the message to all clients that aren't the sender
 		}
 	}
 }
